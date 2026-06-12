@@ -6,7 +6,6 @@ const Authors = (props) => {
   const result = useQuery(ALL_AUTHORS, {
     skip: !props.show
   })
-  // const [name, setName] = useState('')
   const [born, setBorn] = useState('')
   const [selectedName, setSelectedName] = useState('')
 
@@ -15,7 +14,8 @@ const Authors = (props) => {
       if (!data.editAuthor) {
         props.setError('author not found')
       }
-    }
+    },
+    refetchQueries: [{ query: ALL_AUTHORS }]
   })
 
   if (!props.show) {
@@ -31,7 +31,9 @@ const Authors = (props) => {
   const submit = async (event) => {
     event.preventDefault()
 
-    changeYob({ variables: { name: selectedName, setBornTo: born } })
+    const nameToUpdate = selectedName || authors[0]?.name
+
+    changeYob({ variables: { name: nameToUpdate, setBornTo: born } })
     setBorn('')
   }
 
@@ -55,28 +57,32 @@ const Authors = (props) => {
         </tbody>
       </table>
 
-      <h3>Set birthyear</h3>
-      <form onSubmit={submit}>
+      {props.user && (
         <div>
-          <label>
-            name
-            <select value={selectedName} onChange={(event) => setSelectedName(event.target.value)}>
-              {authors.map(author => (
-                <option key={author.id} value={author.name}>
-                  {author.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <h3>Set birthyear</h3>
+          <form onSubmit={submit}>
+          <div>
+            <label>
+              name
+              <select name="name" value={selectedName} onChange={(event) => setSelectedName(event.target.value)}>
+                {authors.map(author => (
+                  <option key={author.id} value={author.name}>
+                    {author.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label>
+              born
+              <input type="number" value={born} onChange={(event) => setBorn(parseInt(event.target.value, 10))}/>
+            </label>
+          </div>
+          <button type="submit">update author</button>
+        </form>
         </div>
-        <div>
-          <label>
-            born
-            <input type="number" value={born} onChange={(event) => setBorn(parseInt(event.target.value, 10))}/>
-          </label>
-        </div>
-        <button type="submit">update author</button>
-      </form>
+      )}
     </div>
   )
 }
